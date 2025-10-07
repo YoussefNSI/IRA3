@@ -54,6 +54,7 @@ for i in range(1, 21):
         print(i)
 
 # Exercice 5
+print("\n--- Exercice 5 ---\n")
 
 matrice = [[1, 2], [3, 4]]
 
@@ -62,11 +63,13 @@ for i in range(len(matrice)):
         print(f"Element à la ligne {i} et colonne {j}: {matrice[i][j]}")
 
 # Exercice 6
+print("\n--- Exercice 6 ---\n")
 
 for i in range(1, 10):
     print("*" * i)
 
 # Exercice 7
+print("\n--- Exercice 7 ---\n")
 
 import random
 
