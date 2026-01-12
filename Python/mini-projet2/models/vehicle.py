@@ -1,5 +1,4 @@
-"""
-Module de gestion des véhicules.
+"""Module de gestion des véhicules.
 Contient la hiérarchie de classes Vehicle, Car, Truck, Motorcycle.
 """
 
@@ -8,6 +7,35 @@ from enum import Enum
 from datetime import datetime, date
 from typing import Optional, List
 import uuid
+
+# Constantes locales pour éviter les imports circulaires
+# Ces valeurs sont synchronisées avec models/constants.py
+_MAINTENANCE_KM_THRESHOLD = 10000
+_MIN_AGE_ECONOMY = 21
+_MIN_AGE_PREMIUM = 23
+_MIN_AGE_LUXURY = 25
+_MIN_AGE_SPORT = 25
+_MIN_AGE_MOTORCYCLE_SMALL = 18
+_MIN_AGE_MOTORCYCLE_LARGE = 21
+_MOTORCYCLE_SMALL_ENGINE_LIMIT = 125
+_MIN_AGE_TRUCK_LIGHT = 21
+_MIN_AGE_TRUCK_MEDIUM = 21
+_MIN_AGE_TRUCK_HEAVY = 25
+_TRUCK_LIGHT_WEIGHT_LIMIT = 3500
+_TRUCK_MEDIUM_WEIGHT_LIMIT = 7500
+_MOTORCYCLE_INSURANCE_SUPPLEMENT = 1.15
+_WEEKLY_RENTAL_MIN_DAYS = 7
+_WEEKLY_RENTAL_DISCOUNT = 0.10
+_MONTHLY_RENTAL_MIN_DAYS = 30
+_MONTHLY_RENTAL_DISCOUNT = 0.20
+
+# Types de permis
+_LICENSE_CAR = "B"
+_LICENSE_MOTORCYCLE_SMALL = "A1"
+_LICENSE_MOTORCYCLE_LARGE = "A"
+_LICENSE_TRUCK_LIGHT = "B"
+_LICENSE_TRUCK_MEDIUM = "C1"
+_LICENSE_TRUCK_HEAVY = "C"
 
 
 class VehicleState(Enum):
@@ -92,7 +120,7 @@ class Vehicle(ABC):
     @daily_rate.setter
     def daily_rate(self, value: float):
         if value < 0:
-            raise ValueError("Le tarif journalier ne peut pas être négatif")
+            raise ValueError(f"Le tarif journalier ne peut pas être négatif ({value})")
         self._daily_rate = value
     
     @property
@@ -118,7 +146,7 @@ class Vehicle(ABC):
     @mileage.setter
     def mileage(self, value: float):
         if value < self._mileage:
-            raise ValueError("Le kilométrage ne peut pas diminuer")
+            raise ValueError(f"Le kilométrage ne peut pas diminuer ({self._mileage} -> {value})")
         self._mileage = value
     
     @property
@@ -178,7 +206,7 @@ class Vehicle(ABC):
             return True
         return False
     
-    def needs_maintenance(self, km_threshold: float = 10000) -> bool:
+    def needs_maintenance(self, km_threshold: float = _MAINTENANCE_KM_THRESHOLD) -> bool:
         """Vérifie si le véhicule nécessite une maintenance."""
         if not self._maintenance_history:
             return self._mileage >= km_threshold
@@ -209,15 +237,15 @@ class Vehicle(ABC):
     def calculate_rental_cost(self, days: int) -> float:
         """Calcule le coût de location pour un nombre de jours donné."""
         if days <= 0:
-            raise ValueError("Le nombre de jours doit être positif")
+            raise ValueError(f"Le nombre de jours doit être positif ({days})")
         
         base_cost = self._daily_rate * days
         
         # Réductions pour locations longues
-        if days >= 30:
-            return base_cost * 0.80  # 20% de réduction
-        elif days >= 7:
-            return base_cost * 0.90  # 10% de réduction
+        if days >= _MONTHLY_RENTAL_MIN_DAYS:
+            return base_cost * (1 - _MONTHLY_RENTAL_DISCOUNT)
+        elif days >= _WEEKLY_RENTAL_MIN_DAYS:
+            return base_cost * (1 - _WEEKLY_RENTAL_DISCOUNT)
         
         return base_cost
     
@@ -300,14 +328,17 @@ class Car(Vehicle):
         return "Voiture"
     
     def get_minimum_driver_age(self) -> int:
-        if self._category in [VehicleCategory.LUXURY, VehicleCategory.SPORT]:
-            return 25
+        """Retourne l'âge minimum selon la catégorie du véhicule."""
+        if self._category == VehicleCategory.LUXURY:
+            return _MIN_AGE_LUXURY
+        elif self._category == VehicleCategory.SPORT:
+            return _MIN_AGE_SPORT
         elif self._category == VehicleCategory.PREMIUM:
-            return 23
-        return 21
+            return _MIN_AGE_PREMIUM
+        return _MIN_AGE_ECONOMY
     
     def get_required_license(self) -> str:
-        return "B"
+        return _LICENSE_CAR
     
     def to_dict(self) -> dict:
         data = super().to_dict()
@@ -368,16 +399,20 @@ class Truck(Vehicle):
         return "Camion"
     
     def get_minimum_driver_age(self) -> int:
-        if self._max_weight > 3500:
-            return 21
-        return 18
+        """Retourne l'âge minimum selon le poids du camion."""
+        if self._max_weight > _TRUCK_MEDIUM_WEIGHT_LIMIT:
+            return _MIN_AGE_TRUCK_HEAVY
+        elif self._max_weight > _TRUCK_LIGHT_WEIGHT_LIMIT:
+            return _MIN_AGE_TRUCK_MEDIUM
+        return _MIN_AGE_TRUCK_LIGHT
     
     def get_required_license(self) -> str:
-        if self._max_weight > 7500:
-            return "C"
-        elif self._max_weight > 3500:
-            return "C1"
-        return "B"
+        """Retourne le permis requis selon le poids du camion."""
+        if self._max_weight > _TRUCK_MEDIUM_WEIGHT_LIMIT:
+            return _LICENSE_TRUCK_HEAVY
+        elif self._max_weight > _TRUCK_LIGHT_WEIGHT_LIMIT:
+            return _LICENSE_TRUCK_MEDIUM
+        return _LICENSE_TRUCK_LIGHT
     
     def to_dict(self) -> dict:
         data = super().to_dict()
@@ -430,20 +465,21 @@ class Motorcycle(Vehicle):
         return "Moto"
     
     def get_minimum_driver_age(self) -> int:
-        if self._engine_size > 125:
-            return 20
-        return 18
+        """Retourne l'âge minimum selon la cylindrée."""
+        if self._engine_size > _MOTORCYCLE_SMALL_ENGINE_LIMIT:
+            return _MIN_AGE_MOTORCYCLE_LARGE
+        return _MIN_AGE_MOTORCYCLE_SMALL
     
     def get_required_license(self) -> str:
-        if self._engine_size > 125:
-            return "A"
-        return "A1"
+        """Retourne le permis requis selon la cylindrée."""
+        if self._engine_size > _MOTORCYCLE_SMALL_ENGINE_LIMIT:
+            return _LICENSE_MOTORCYCLE_LARGE
+        return _LICENSE_MOTORCYCLE_SMALL
     
     def calculate_rental_cost(self, days: int) -> float:
-        """Les motos ont un supplément assurance de 5€/jour."""
+        """Les motos ont un supplément assurance (+15%)."""
         base_cost = super().calculate_rental_cost(days)
-        insurance_supplement = 5 * days
-        return base_cost + insurance_supplement
+        return base_cost * _MOTORCYCLE_INSURANCE_SUPPLEMENT
     
     def to_dict(self) -> dict:
         data = super().to_dict()

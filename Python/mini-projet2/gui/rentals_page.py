@@ -15,7 +15,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QDate
 
 from car_rental_system import CarRentalSystem
 from models.rental import Rental, RentalStatus
-from gui.icons import get_icon
+from gui.icons import get_icon, create_action_button
 
 
 class NewRentalDialog(QDialog):
@@ -787,23 +787,34 @@ class RentalsPage(QWidget):
         
         header = self.table.horizontalHeader()
         if header:
-            header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-            header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
-            header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(8, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(9, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(9, 180)
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)  # ID
+            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Client
+            header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)  # Véhicule
+            header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)  # Début
+            header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)  # Fin
+            header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)  # Statut
+            header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)  # Coût
+            header.setSectionResizeMode(7, QHeaderView.ResizeMode.Fixed)  # Jours
+            header.setSectionResizeMode(8, QHeaderView.ResizeMode.Fixed)  # Notes
+            header.setSectionResizeMode(9, QHeaderView.ResizeMode.Fixed)  # Actions
+        
+        # Largeurs fixes des colonnes
+        self.table.setColumnWidth(0, 90)   # ID
+        self.table.setColumnWidth(3, 100)  # Début
+        self.table.setColumnWidth(4, 100)  # Fin
+        self.table.setColumnWidth(5, 100)  # Statut
+        self.table.setColumnWidth(6, 80)   # Coût
+        self.table.setColumnWidth(7, 90)   # Jours
+        self.table.setColumnWidth(8, 50)   # Notes
+        self.table.setColumnWidth(9, 180)  # Actions
         
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setAlternatingRowColors(True)
         v_header = self.table.verticalHeader()
         if v_header:
-            v_header.setVisible(False)
+            v_header.setDefaultSectionSize(45)
+            v_header.setMinimumSectionSize(45)
+            v_header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self.table.doubleClicked.connect(self.show_rental_details)
         
         layout.addWidget(self.table)
@@ -957,17 +968,63 @@ class RentalsPage(QWidget):
             self.table.setItem(row, 3, QTableWidgetItem(str(rental.start_date)))
             self.table.setItem(row, 4, QTableWidgetItem(str(rental.end_date)))
             
-            # Statut avec couleur
-            status_item = QTableWidgetItem(rental.status.value)
+            # Statut avec badge
+            status_widget = QWidget()
+            status_layout = QHBoxLayout(status_widget)
+            status_layout.setContentsMargins(2, 2, 2, 2)
+            status_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            
+            status_label = QLabel(rental.status.value)
             if rental.status == RentalStatus.ACTIVE:
-                status_item.setForeground(Qt.GlobalColor.darkGreen)
+                status_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #f0fdf4;
+                        color: #16a34a;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        font-size: 11px;
+                        border: 1px solid #bbf7d0;
+                    }
+                """)
             elif rental.status == RentalStatus.RESERVED:
-                status_item.setForeground(Qt.GlobalColor.darkBlue)
+                status_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #eff6ff;
+                        color: #2563eb;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        font-size: 11px;
+                        border: 1px solid #bfdbfe;
+                    }
+                """)
             elif rental.status == RentalStatus.COMPLETED:
-                status_item.setForeground(Qt.GlobalColor.darkGray)
+                status_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #f1f5f9;
+                        color: #64748b;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        font-size: 11px;
+                        border: 1px solid #e2e8f0;
+                    }
+                """)
             else:
-                status_item.setForeground(Qt.GlobalColor.darkRed)
-            self.table.setItem(row, 5, status_item)
+                status_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #fef2f2;
+                        color: #dc2626;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        font-size: 11px;
+                        border: 1px solid #fecaca;
+                    }
+                """)
+            status_layout.addWidget(status_label)
+            self.table.setCellWidget(row, 5, status_widget)
             
             # Coût
             self.table.setItem(row, 6, QTableWidgetItem(f"{rental.total_cost:.2f}€"))
@@ -998,63 +1055,82 @@ class RentalsPage(QWidget):
             # Actions
             actions_widget = QWidget()
             actions_layout = QHBoxLayout(actions_widget)
-            actions_layout.setContentsMargins(4, 4, 4, 4)
+            actions_layout.setContentsMargins(4, 0, 4, 0)
             actions_layout.setSpacing(4)
+            actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
             # Bouton details
-            detail_btn = QPushButton()
-            detail_btn.setIcon(get_icon("eye", "#64748b", 16))
-            detail_btn.setFixedSize(32, 32)
-            detail_btn.setToolTip("Voir les details")
-            detail_btn.setStyleSheet("QPushButton { background-color: #f1f5f9; border-radius: 6px; } QPushButton:hover { background-color: #e2e8f0; }")
+            detail_btn = create_action_button(
+                "eye", "Voir les détails",
+                icon_color="#64748b",
+                bg_color="#f1f5f9",
+                hover_color="#e2e8f0",
+                border_color="#e2e8f0",
+                size=26
+            )
             detail_btn.clicked.connect(lambda checked, r=rental: self.show_rental_details_for(r))
             actions_layout.addWidget(detail_btn)
             
             if rental.status == RentalStatus.RESERVED:
                 # Demarrer
-                start_btn = QPushButton()
-                start_btn.setIcon(get_icon("play", "#ffffff", 16))
-                start_btn.setFixedSize(32, 32)
-                start_btn.setToolTip("Demarrer la location")
-                start_btn.setStyleSheet("QPushButton { background-color: #22c55e; border-radius: 6px; } QPushButton:hover { background-color: #16a34a; }")
+                start_btn = create_action_button(
+                    "play", "Démarrer la location",
+                    icon_color="#ffffff",
+                    bg_color="#22c55e",
+                    hover_color="#16a34a",
+                    border_color="#16a34a",
+                    size=26
+                )
                 start_btn.clicked.connect(lambda checked, r=rental: self.start_rental(r))
                 actions_layout.addWidget(start_btn)
                 
                 # Modifier
-                edit_btn = QPushButton()
-                edit_btn.setIcon(get_icon("edit", "#64748b", 16))
-                edit_btn.setFixedSize(32, 32)
-                edit_btn.setToolTip("Modifier")
-                edit_btn.setStyleSheet("QPushButton { background-color: #f1f5f9; border-radius: 6px; } QPushButton:hover { background-color: #e2e8f0; }")
+                edit_btn = create_action_button(
+                    "edit", "Modifier",
+                    icon_color="#3b82f6",
+                    bg_color="#eff6ff",
+                    hover_color="#dbeafe",
+                    border_color="#bfdbfe",
+                    size=26
+                )
                 edit_btn.clicked.connect(lambda checked, r=rental: self.edit_rental(r))
                 actions_layout.addWidget(edit_btn)
             
             if rental.status == RentalStatus.ACTIVE:
                 # Terminer
-                complete_btn = QPushButton()
-                complete_btn.setIcon(get_icon("check", "#ffffff", 16))
-                complete_btn.setFixedSize(32, 32)
-                complete_btn.setToolTip("Terminer la location")
-                complete_btn.setStyleSheet("QPushButton { background-color: #22c55e; border-radius: 6px; } QPushButton:hover { background-color: #16a34a; }")
+                complete_btn = create_action_button(
+                    "check", "Terminer la location",
+                    icon_color="#ffffff",
+                    bg_color="#22c55e",
+                    hover_color="#16a34a",
+                    border_color="#16a34a",
+                    size=26
+                )
                 complete_btn.clicked.connect(lambda checked, r=rental: self.complete_rental(r))
                 actions_layout.addWidget(complete_btn)
                 
                 # Prolonger
-                extend_btn = QPushButton()
-                extend_btn.setIcon(get_icon("calendar", "#64748b", 16))
-                extend_btn.setFixedSize(32, 32)
-                extend_btn.setToolTip("Prolonger")
-                extend_btn.setStyleSheet("QPushButton { background-color: #f1f5f9; border-radius: 6px; } QPushButton:hover { background-color: #e2e8f0; }")
+                extend_btn = create_action_button(
+                    "calendar", "Prolonger",
+                    icon_color="#8b5cf6",
+                    bg_color="#f5f3ff",
+                    hover_color="#ede9fe",
+                    border_color="#ddd6fe",
+                    size=26
+                )
                 extend_btn.clicked.connect(lambda checked, r=rental: self.edit_rental(r))
                 actions_layout.addWidget(extend_btn)
             
             if rental.status in [RentalStatus.ACTIVE, RentalStatus.RESERVED]:
                 # Annuler
-                cancel_btn = QPushButton()
-                cancel_btn.setIcon(get_icon("cancel", "#ffffff", 16))
-                cancel_btn.setFixedSize(32, 32)
-                cancel_btn.setToolTip("Annuler")
-                cancel_btn.setStyleSheet("QPushButton { background-color: #ef4444; border-radius: 6px; } QPushButton:hover { background-color: #dc2626; }")
+                cancel_btn = create_action_button(
+                    "cancel", "Annuler",
+                    icon_color="#ffffff",
+                    bg_color="#ef4444",
+                    hover_color="#dc2626",
+                    border_color="#dc2626",
+                    size=26
+                )
                 cancel_btn.clicked.connect(lambda checked, r=rental: self.cancel_rental(r))
                 actions_layout.addWidget(cancel_btn)
             

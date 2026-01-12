@@ -7,6 +7,16 @@ from typing import Optional
 from enum import Enum
 import uuid
 
+# Constantes locales pour éviter les imports circulaires
+# Ces valeurs sont synchronisées avec models/constants.py
+_LATE_RETURN_PENALTY_PER_DAY = 50.0
+_CANCELLATION_FEE_PERCENT = 0.20
+_WEEKLY_RENTAL_MIN_DAYS = 7
+_WEEKLY_RENTAL_DISCOUNT = 0.10
+_MONTHLY_RENTAL_MIN_DAYS = 30
+_MONTHLY_RENTAL_DISCOUNT = 0.20
+_FREE_CANCELLATION_DAYS_BEFORE = 2
+
 
 class RentalStatus(Enum):
     """Statuts possibles d'une location."""
@@ -36,8 +46,8 @@ class Rental:
     """
     
     # Constantes pour les pénalités
-    LATE_RETURN_PENALTY_PER_DAY = 50.0  # € par jour de retard
-    CANCELLATION_FEE_PERCENT = 0.20  # 20% du coût total
+    LATE_RETURN_PENALTY_PER_DAY = _LATE_RETURN_PENALTY_PER_DAY
+    CANCELLATION_FEE_PERCENT = _CANCELLATION_FEE_PERCENT
     
     def __init__(
         self,
@@ -51,11 +61,15 @@ class Rental:
     ):
         # Validation des dates
         if end_date < start_date:
-            raise ValueError("La date de fin ne peut pas être antérieure à la date de début")
+            raise ValueError(
+                "La date de fin ne peut pas être antérieure à la date de début"
+            )
         
         # Permettre les dates d'aujourd'hui et futures (pas dans le passé)
         if start_date < date.today():
-            raise ValueError("La date de début ne peut pas être dans le passé (avant aujourd'hui)")
+            raise ValueError(
+                "La date de début ne peut pas être dans le passé"
+            )
         
         self._id = rental_id or str(uuid.uuid4())[:8].upper()
         self._customer_id = customer_id
@@ -168,10 +182,10 @@ class Rental:
         base_cost = self._daily_rate * duration
         
         # Réductions pour locations longues
-        if duration >= 30:
-            base_cost *= 0.80  # 20% de réduction
-        elif duration >= 7:
-            base_cost *= 0.90  # 10% de réduction
+        if duration >= _MONTHLY_RENTAL_MIN_DAYS:
+            base_cost *= (1 - _MONTHLY_RENTAL_DISCOUNT)
+        elif duration >= _WEEKLY_RENTAL_MIN_DAYS:
+            base_cost *= (1 - _WEEKLY_RENTAL_DISCOUNT)
         
         return base_cost
     
@@ -217,9 +231,12 @@ class Rental:
             
         Returns:
             Le coût total de la location
+            
+        Raises:
+            ValueError: Si la location n'est pas active
         """
         if self._status not in [RentalStatus.ACTIVE, RentalStatus.RESERVED]:
-            raise ValueError("Impossible de terminer une location qui n'est pas active ou réservée")
+            raise ValueError(f"Location '{self._id}' n'est pas active (statut: {self._status.value})")
         
         self._actual_return_date = return_date
         self._end_mileage = end_mileage
@@ -238,9 +255,12 @@ class Rental:
         
         Returns:
             Les frais d'annulation
+            
+        Raises:
+            ValueError: Si la location ne peut pas être annulée
         """
         if self._status == RentalStatus.COMPLETED:
-            raise ValueError("Impossible d'annuler une location déjà terminée")
+            raise ValueError(f"Location '{self._id}' ne peut pas être annulée: location déjà terminée")
         
         cancellation_fee = 0.0
         
@@ -253,10 +273,10 @@ class Rental:
         elif days_until_start <= 3:
             # Annulation tardive: 50% du coût
             cancellation_fee = self.calculate_base_cost() * 0.50
-        elif days_until_start <= 7:
-            # Annulation: 20% du coût
-            cancellation_fee = self.calculate_base_cost() * self.CANCELLATION_FEE_PERCENT
-        # Plus de 7 jours: gratuit
+        elif days_until_start <= _FREE_CANCELLATION_DAYS_BEFORE + 5:
+            # Annulation: frais standards
+            cancellation_fee = self.calculate_base_cost() * _CANCELLATION_FEE_PERCENT
+        # Plus de 7 jours avant: gratuit
         
         self._penalty = cancellation_fee
         self._status = RentalStatus.CANCELLED

@@ -6,6 +6,26 @@ from datetime import date, datetime
 from typing import Optional, List, Set
 import uuid
 
+# Constantes locales pour éviter les imports circulaires
+# Ces valeurs sont synchronisées avec models/constants.py
+_LOYALTY_TIER_1_RENTALS = 5
+_LOYALTY_TIER_1_DISCOUNT = 0.05
+_LOYALTY_TIER_2_RENTALS = 10
+_LOYALTY_TIER_2_DISCOUNT = 0.10
+_LOYALTY_TIER_3_RENTALS = 20
+_LOYALTY_TIER_3_DISCOUNT = 0.15
+_MIN_LICENSE_YEARS = 1
+
+
+def _calculate_years_difference(from_date: date, to_date: date | None = None) -> int:
+    """Calcule le nombre d'années complètes entre deux dates."""
+    if to_date is None:
+        to_date = date.today()
+    years = to_date.year - from_date.year
+    if (to_date.month, to_date.day) < (from_date.month, from_date.day):
+        years -= 1
+    return years
+
 
 class Customer:
     """
@@ -86,12 +106,7 @@ class Customer:
     @property
     def age(self) -> int:
         """Calcule l'âge actuel du client."""
-        today = date.today()
-        age = today.year - self._birth_date.year
-        # Ajustement si l'anniversaire n'est pas encore passé cette année
-        if (today.month, today.day) < (self._birth_date.month, self._birth_date.day):
-            age -= 1
-        return age
+        return _calculate_years_difference(self._birth_date)
     
     @property
     def license_number(self) -> str:
@@ -108,11 +123,7 @@ class Customer:
     @property
     def years_of_license(self) -> int:
         """Calcule le nombre d'années depuis l'obtention du permis."""
-        today = date.today()
-        years = today.year - self._license_date.year
-        if (today.month, today.day) < (self._license_date.month, self._license_date.day):
-            years -= 1
-        return years
+        return _calculate_years_difference(self._license_date)
     
     @property
     def email(self) -> str:
@@ -173,6 +184,11 @@ class Customer:
             
         Returns:
             Tuple (peut_louer: bool, raison: str)
+            
+        Note:
+            Cette méthode retourne un tuple pour compatibilité ascendante.
+            Les exceptions correspondantes sont disponibles pour une gestion
+            d'erreurs plus fine.
         """
         if self._is_blocked:
             return False, f"Client bloqué: {self._blocked_reason}"
@@ -183,10 +199,41 @@ class Customer:
         if not self.has_license(required_license):
             return False, f"Permis {required_license} requis, non détenu par le client"
         
-        if self.years_of_license < 1:
-            return False, "Le permis doit être détenu depuis au moins 1 an"
+        if self.years_of_license < _MIN_LICENSE_YEARS:
+            return False, f"Le permis doit être détenu depuis au moins {_MIN_LICENSE_YEARS} an"
         
         return True, "OK"
+    
+    def check_rental_eligibility(self, required_license: str, minimum_age: int) -> None:
+        """
+        Vérifie l'éligibilité du client et lève une exception si non éligible.
+        
+        Args:
+            required_license: Type de permis requis
+            minimum_age: Âge minimum requis
+            
+        Raises:
+            CustomerBlockedError: Si le client est bloqué
+            AgeTooYoungError: Si le client est trop jeune
+            LicenseNotHeldError: Si le client n'a pas le permis requis
+            LicenseTooRecentError: Si le permis est trop récent
+        """
+        from models.exceptions import (
+            CustomerBlockedError, AgeTooYoungError, 
+            LicenseNotHeldError, LicenseTooRecentError
+        )
+        
+        if self._is_blocked:
+            raise CustomerBlockedError(self._id, self._blocked_reason or "")
+        
+        if self.age < minimum_age:
+            raise AgeTooYoungError(self.age, minimum_age)
+        
+        if not self.has_license(required_license):
+            raise LicenseNotHeldError(required_license)
+        
+        if self.years_of_license < _MIN_LICENSE_YEARS:
+            raise LicenseTooRecentError(self.years_of_license, _MIN_LICENSE_YEARS)
     
     def add_rental(self, rental_id: str) -> None:
         """Ajoute une location à l'historique et aux locations actives."""
@@ -237,7 +284,7 @@ class Customer:
         self._is_blocked = is_blocked
         self._blocked_reason = blocked_reason
     
-    def is_loyal_customer(self, min_rentals: int = 5) -> bool:
+    def is_loyal_customer(self, min_rentals: int = _LOYALTY_TIER_1_RENTALS) -> bool:
         """Vérifie si le client est un client fidèle."""
         return len(self._rental_history) >= min_rentals
     
@@ -249,12 +296,12 @@ class Customer:
             Pourcentage de réduction (0.0 à 0.15)
         """
         total_rentals = len(self._rental_history)
-        if total_rentals >= 20:
-            return 0.15  # 15%
-        elif total_rentals >= 10:
-            return 0.10  # 10%
-        elif total_rentals >= 5:
-            return 0.05  # 5%
+        if total_rentals >= _LOYALTY_TIER_3_RENTALS:
+            return _LOYALTY_TIER_3_DISCOUNT
+        elif total_rentals >= _LOYALTY_TIER_2_RENTALS:
+            return _LOYALTY_TIER_2_DISCOUNT
+        elif total_rentals >= _LOYALTY_TIER_1_RENTALS:
+            return _LOYALTY_TIER_1_DISCOUNT
         return 0.0
     
     def __str__(self) -> str:

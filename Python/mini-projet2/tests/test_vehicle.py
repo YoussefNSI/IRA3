@@ -262,11 +262,11 @@ class TestTruck:
     
     def test_truck_minimum_age_light(self, sample_truck):
         """Test de l'âge minimum pour camion léger."""
-        assert sample_truck.get_minimum_driver_age() == 18
+        assert sample_truck.get_minimum_driver_age() == 21  # Camion léger: 21 ans
     
     def test_truck_minimum_age_heavy(self, heavy_truck):
         """Test de l'âge minimum pour camion lourd."""
-        assert heavy_truck.get_minimum_driver_age() == 21
+        assert heavy_truck.get_minimum_driver_age() == 25  # Camion lourd (>7.5T): 25 ans
 
 
 class TestMotorcycle:
@@ -324,12 +324,12 @@ class TestMotorcycle:
     
     def test_motorcycle_minimum_age_large(self, large_motorcycle):
         """Test de l'âge minimum pour grosse moto."""
-        assert large_motorcycle.get_minimum_driver_age() == 20
+        assert large_motorcycle.get_minimum_driver_age() == 21  # Moto >125cc: 21 ans
     
     def test_motorcycle_rental_cost_with_insurance(self, small_motorcycle):
-        """Test du coût avec supplément assurance."""
+        """Test du coût avec supplément assurance (+15%)."""
         cost = small_motorcycle.calculate_rental_cost(3)
-        expected = (35.0 * 3) + (5 * 3)  # Base + assurance
+        expected = (35.0 * 3) * 1.15  # Base * 1.15 pour supplément assurance
         assert cost == expected
 
 

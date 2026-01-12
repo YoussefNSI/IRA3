@@ -15,7 +15,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QDate
 
 from car_rental_system import CarRentalSystem
 from models.customer import Customer
-from gui.icons import get_icon
+from gui.icons import get_icon, create_action_button
 
 
 class CustomerDialog(QDialog):
@@ -331,22 +331,32 @@ class CustomersPage(QWidget):
         # Configuration du tableau
         header = self.table.horizontalHeader()
         if header:
-            header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-            header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
-            header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(8, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(8, 120)
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)  # ID
+            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Nom
+            header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)  # Âge
+            header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)  # Email
+            header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)  # Téléphone
+            header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)  # Permis
+            header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)  # Locations
+            header.setSectionResizeMode(7, QHeaderView.ResizeMode.Fixed)  # Statut
+            header.setSectionResizeMode(8, QHeaderView.ResizeMode.Fixed)  # Actions
+        
+        # Largeurs fixes des colonnes
+        self.table.setColumnWidth(0, 90)   # ID
+        self.table.setColumnWidth(2, 70)   # Âge
+        self.table.setColumnWidth(4, 120)  # Téléphone
+        self.table.setColumnWidth(5, 80)   # Permis
+        self.table.setColumnWidth(6, 80)   # Locations
+        self.table.setColumnWidth(7, 100)  # Statut
+        self.table.setColumnWidth(8, 120)  # Actions
         
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setAlternatingRowColors(True)
         v_header = self.table.verticalHeader()
         if v_header:
-            v_header.setVisible(False)
+            v_header.setDefaultSectionSize(45)
+            v_header.setMinimumSectionSize(45)
+            v_header.setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         
         layout.addWidget(self.table)
     
@@ -382,36 +392,80 @@ class CustomersPage(QWidget):
             self.table.setItem(row, 5, QTableWidgetItem(", ".join(sorted(customer.license_types))))
             self.table.setItem(row, 6, QTableWidgetItem(str(customer.get_total_rentals())))
             
-            # Statut
+            # Statut avec badge
+            status_widget = QWidget()
+            status_layout = QHBoxLayout(status_widget)
+            status_layout.setContentsMargins(2, 2, 2, 2)
+            status_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            
+            status_label = QLabel()
             if customer.is_blocked:
-                status_item = QTableWidgetItem("[BLOQUE]")
-                status_item.setForeground(Qt.GlobalColor.darkRed)
+                status_label.setText("Bloqué")
+                status_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #fef2f2;
+                        color: #dc2626;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        font-size: 11px;
+                        border: 1px solid #fecaca;
+                    }
+                """)
             elif customer.is_loyal_customer():
-                status_item = QTableWidgetItem("[FIDELE]")
-                status_item.setForeground(Qt.GlobalColor.darkGreen)
+                status_label.setText("Fidèle")
+                status_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #f0fdf4;
+                        color: #16a34a;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        font-size: 11px;
+                        border: 1px solid #bbf7d0;
+                    }
+                """)
             else:
-                status_item = QTableWidgetItem("[ACTIF]")
-                status_item.setForeground(Qt.GlobalColor.darkBlue)
-            self.table.setItem(row, 7, status_item)
+                status_label.setText("Actif")
+                status_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #eff6ff;
+                        color: #2563eb;
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        font-size: 11px;
+                        border: 1px solid #bfdbfe;
+                    }
+                """)
+            status_layout.addWidget(status_label)
+            self.table.setCellWidget(row, 7, status_widget)
             
             # Boutons d'action
             actions_widget = QWidget()
             actions_layout = QHBoxLayout(actions_widget)
-            actions_layout.setContentsMargins(4, 4, 4, 4)
-            actions_layout.setSpacing(4)
+            actions_layout.setContentsMargins(4, 0, 4, 0)
+            actions_layout.setSpacing(6)
+            actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
-            edit_btn = QPushButton()
-            edit_btn.setIcon(get_icon("edit", "#64748b", 16))
-            edit_btn.setFixedSize(32, 32)
-            edit_btn.setToolTip("Modifier")
-            edit_btn.setStyleSheet("QPushButton { background-color: #f1f5f9; border-radius: 6px; } QPushButton:hover { background-color: #e2e8f0; }")
+            edit_btn = create_action_button(
+                "edit", "Modifier",
+                icon_color="#3b82f6",
+                bg_color="#eff6ff",
+                hover_color="#dbeafe",
+                border_color="#bfdbfe",
+                size=28
+            )
             edit_btn.clicked.connect(lambda checked, c=customer: self.edit_customer(c))
             
-            delete_btn = QPushButton()
-            delete_btn.setIcon(get_icon("delete", "#ef4444", 16))
-            delete_btn.setFixedSize(32, 32)
-            delete_btn.setToolTip("Supprimer")
-            delete_btn.setProperty("danger", True)
+            delete_btn = create_action_button(
+                "delete", "Supprimer",
+                icon_color="#ef4444",
+                bg_color="#fef2f2",
+                hover_color="#fee2e2",
+                border_color="#fecaca",
+                size=28
+            )
             delete_btn.clicked.connect(lambda checked, c=customer: self.delete_customer(c))
             
             actions_layout.addWidget(edit_btn)

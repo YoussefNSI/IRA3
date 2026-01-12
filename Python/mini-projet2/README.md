@@ -1,16 +1,17 @@
-# Systeme de Location de Voitures
+# Système de Location de Voitures
 
 ## Description
 
-Application de gestion de location de voitures developpee en Python, basee sur les principes de la **Programmation Orientee Objet (POO)**.
+Application de gestion de location de voitures développée en Python, basée sur les principes de la **Programmation Orientée Objet (POO)**.
 
-Cette application permet a une agence de location de :
+Cette application permet à une agence de location de :
 
-- Gerer son parc automobile (voitures, camions, motos)
-- Gerer ses clients
+- Gérer son parc automobile (voitures, camions, motos)
+- Gérer ses clients
 - Effectuer et suivre les locations
-- Calculer le cout des locations avec reductions
-- Generer des rapports detailles
+- Calculer le coût des locations avec réductions
+- Générer des rapports détaillés
+- **Sauvegarder et charger les données** (nouveau !)
 
 ## Structure du Projet
 
@@ -20,13 +21,18 @@ mini-projet2/
 │   ├── __init__.py
 │   ├── vehicle.py          # Classes Vehicle, Car, Truck, Motorcycle
 │   ├── customer.py         # Classe Customer
-│   └── rental.py           # Classe Rental
+│   ├── rental.py           # Classe Rental
+│   ├── constants.py        # Constantes centralisées (nouveau)
+│   ├── exceptions.py       # Exceptions personnalisées (nouveau)
+│   ├── persistence.py      # Sauvegarde/chargement JSON (nouveau)
+│   └── utils.py            # Fonctions utilitaires (nouveau)
 ├── tests/
 │   ├── __init__.py
 │   ├── test_vehicle.py     # Tests des véhicules
 │   ├── test_customer.py    # Tests des clients
 │   ├── test_rental.py      # Tests des locations
 │   └── test_car_rental_system.py  # Tests du système
+├── data/                   # Données persistées (nouveau)
 ├── car_rental_system.py    # Classe principale CarRentalSystem
 ├── main.py                 # Point d'entrée avec démonstration
 ├── requirements.txt        # Dépendances

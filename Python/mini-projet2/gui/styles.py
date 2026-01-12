@@ -111,7 +111,7 @@ QTableWidget, QTableView {
 }
 
 QTableWidget::item, QTableView::item {
-    padding: 8px;
+    padding: 4px 8px;
     border-bottom: 1px solid #f1f5f9;
 }
 

@@ -3,7 +3,7 @@ Module de gestion des icônes pour l'interface graphique.
 Utilise des icônes SVG intégrées pour une apparence professionnelle.
 """
 
-from PyQt6.QtWidgets import QStyle, QApplication
+from PyQt6.QtWidgets import QStyle, QApplication, QPushButton
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtSvg import QSvgRenderer
@@ -175,17 +175,31 @@ def create_icon_from_svg(svg_content: str, color: str = "#ffffff", size: int = 2
     # Remplacer la couleur
     svg_data = svg_content.format(color=color).encode('utf-8')
     
-    # Créer le pixmap
-    pixmap = QPixmap(size, size)
+    # Utiliser une résolution plus élevée pour un meilleur rendu
+    scale = 2  # Facteur d'échelle pour la qualité
+    render_size = size * scale
+    
+    # Créer le pixmap avec une résolution plus élevée
+    pixmap = QPixmap(render_size, render_size)
     pixmap.fill(Qt.GlobalColor.transparent)
     
     # Rendre le SVG
     renderer = QSvgRenderer(svg_data)
-    painter = QPainter(pixmap)
-    renderer.render(painter)
-    painter.end()
+    if renderer.isValid():
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        renderer.render(painter)
+        painter.end()
     
-    return QIcon(pixmap)
+    # Redimensionner pour la taille finale avec une bonne qualité
+    final_pixmap = pixmap.scaled(
+        size, size,
+        Qt.AspectRatioMode.KeepAspectRatio,
+        Qt.TransformationMode.SmoothTransformation
+    )
+    
+    return QIcon(final_pixmap)
 
 
 def get_icon(name: str, color: str = "#ffffff", size: int = 24) -> QIcon:
@@ -198,6 +212,58 @@ def get_icon(name: str, color: str = "#ffffff", size: int = 24) -> QIcon:
 def create_colored_icon(icon_name: str, color: str, size: int = 32) -> QIcon:
     """Crée une icône colorée."""
     return get_icon(icon_name, color, size)
+
+
+def create_action_button(
+    icon_name: str,
+    tooltip: str,
+    icon_color: str = "#64748b",
+    bg_color: str = "#f1f5f9",
+    hover_color: str = "#e2e8f0",
+    border_color: str = "#e2e8f0",
+    size: int = 28
+) -> QPushButton:
+    """
+    Crée un bouton d'action pour les tableaux.
+    
+    Args:
+        icon_name: Nom de l'icône SVG
+        tooltip: Texte du tooltip
+        icon_color: Couleur de l'icône
+        bg_color: Couleur de fond
+        hover_color: Couleur de fond au survol
+        border_color: Couleur de la bordure
+        size: Taille du bouton
+    
+    Returns:
+        QPushButton configuré
+    """
+    from PyQt6.QtCore import QSize as QtSize
+    
+    btn = QPushButton()
+    btn.setFixedSize(size, size)
+    btn.setToolTip(tooltip)
+    
+    # Icône avec taille adaptée
+    icon_size = int(size * 0.55)  # L'icône fait 55% de la taille du bouton
+    btn.setIcon(get_icon(icon_name, icon_color, icon_size * 2))
+    btn.setIconSize(QtSize(icon_size, icon_size))
+    
+    btn.setStyleSheet(f"""
+        QPushButton {{
+            background-color: {bg_color};
+            border: 1px solid {border_color};
+            border-radius: {size // 4}px;
+        }}
+        QPushButton:hover {{
+            background-color: {hover_color};
+        }}
+        QPushButton:pressed {{
+            background-color: {border_color};
+        }}
+    """)
+    
+    return btn
 
 
 class IconButton:
