@@ -15,7 +15,6 @@ public class TestJpa {
         }
 
 
-
         em.close();
         emf.close();
     }
