@@ -1,4 +1,5 @@
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "LIVRE")
@@ -14,6 +15,9 @@ public class Livre {
 
     @Column(name = "auteur")
     private String auteur;
+
+    @ManyToMany(mappedBy = "livres")
+    private List<Emprunt> emprunts;
 
     public Livre() {
     }
@@ -46,6 +50,9 @@ public class Livre {
     public void setAuteur(String auteur) {
         this.auteur = auteur;
     }
+
+    public List<Emprunt> getEmprunts() { return emprunts; }
+    public void setEmprunts(List<Emprunt> emprunts) { this.emprunts = emprunts; }
 
     @Override
     public String toString() {
