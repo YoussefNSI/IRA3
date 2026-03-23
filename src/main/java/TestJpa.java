@@ -7,9 +7,8 @@ import java.util.List;
 public class TestJpa {
     public static void main(String[] args) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu-essai");
-        EntityManager em = emf.createEntityManager();
 
-        try {
+        try (emf; EntityManager em = emf.createEntityManager()) {
             // Insérer un nouveau livre
             insertLivre(em, "Le Petit Prince", "Antoine de Saint-Exupéry");
 
@@ -33,9 +32,6 @@ public class TestJpa {
 
         } catch (Exception e) {
             System.err.println("Erreur : " + e.getMessage());
-        } finally {
-            em.close();
-            emf.close();
         }
     }
 

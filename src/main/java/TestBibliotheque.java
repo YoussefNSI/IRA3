@@ -4,9 +4,8 @@ import java.util.List;
 public class TestBibliotheque {
     public static void main(String[] args) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu-essai");
-        EntityManager em = emf.createEntityManager();
 
-        try {
+        try (emf; EntityManager em = emf.createEntityManager()) {
             // Emprunt et ses livres associés
             Long idEmprunt = 1L;
             Emprunt emprunt = em.find(Emprunt.class, idEmprunt);
@@ -23,7 +22,7 @@ public class TestBibliotheque {
             // Tous les emprunts d'un client donné
             Long idClient = 1L;
             TypedQuery<Emprunt> query = em.createQuery(
-                "SELECT e FROM Emprunt e WHERE e.client.id = :idClient", Emprunt.class);
+                    "SELECT e FROM Emprunt e WHERE e.client.id = :idClient", Emprunt.class);
             query.setParameter("idClient", idClient);
             List<Emprunt> emprunts = query.getResultList();
 
@@ -35,9 +34,6 @@ public class TestBibliotheque {
 
         } catch (Exception e) {
             System.err.println("Erreur : " + e.getMessage());
-        } finally {
-            em.close();
-            emf.close();
         }
     }
 }
