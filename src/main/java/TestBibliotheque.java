@@ -34,7 +34,7 @@ public class TestBibliotheque {
             });
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Erreur : " + e.getMessage());
         } finally {
             em.close();
             emf.close();

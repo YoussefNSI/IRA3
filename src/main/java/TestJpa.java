@@ -32,7 +32,7 @@ public class TestJpa {
             afficherTousLesLivres(em);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Erreur : " + e.getMessage());
         } finally {
             em.close();
             emf.close();
@@ -67,7 +67,6 @@ public class TestJpa {
             Livre livre = em.find(Livre.class, id);
             if (livre != null) {
                 livre.setTitre(nouveauTitre);
-                em.merge(livre);
                 em.getTransaction().commit();
                 System.out.println("Titre modifié : " + nouveauTitre);
             } else {
