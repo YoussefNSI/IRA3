@@ -1,40 +1,40 @@
-import jakarta.persistence.*;
-import java.util.List;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import jakarta.persistence.TypedQuery;
 
-public class TestBibliotheque {
-    public static void main(String[] args) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu-essai");
+void main() {
+    EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu-essai");
 
-        try (emf; EntityManager em = emf.createEntityManager()) {
-            // Emprunt et ses livres associés
-            Long idEmprunt = 1L;
-            Emprunt emprunt = em.find(Emprunt.class, idEmprunt);
-            if (emprunt != null) {
-                System.out.println("Emprunt : " + emprunt);
-                System.out.println("Livres associés :");
-                emprunt.getLivres().forEach(l -> System.out.println("  " + l));
-            } else {
-                System.out.println("Emprunt non trouvé (id=" + idEmprunt + ")");
-            }
-
-            System.out.println();
-
-            // Tous les emprunts d'un client donné
-            Long idClient = 1L;
-            TypedQuery<Emprunt> query = em.createQuery(
-                    "SELECT e FROM Emprunt e WHERE e.client.id = :idClient", Emprunt.class);
-            query.setParameter("idClient", idClient);
-            List<Emprunt> emprunts = query.getResultList();
-
-            System.out.println("Emprunts du client id=" + idClient + " : " + emprunts.size());
-            emprunts.forEach(e -> {
-                System.out.println("  " + e);
-                e.getLivres().forEach(l -> System.out.println("    -> " + l.getTitre()));
-            });
-
-        } catch (Exception e) {
-            System.err.println("Erreur : " + e.getMessage());
+    try (emf; EntityManager em = emf.createEntityManager()) {
+        // Emprunt et ses livres associés
+        Long idEmprunt = 1L;
+        Emprunt emprunt = em.find(Emprunt.class, idEmprunt);
+        if (emprunt != null) {
+            IO.println("Emprunt : " + emprunt);
+            IO.println("Livres associés :");
+            emprunt.getLivres().forEach(l -> IO.println("  " + l));
+        } else {
+            IO.println("Emprunt non trouvé (id=" + idEmprunt + ")");
         }
+
+        IO.println();
+
+        // Tous les emprunts d'un client donné
+        Long idClient = 1L;
+        TypedQuery<Emprunt> query = em.createQuery(
+                "SELECT e FROM Emprunt e WHERE e.client.id = :idClient", Emprunt.class);
+        query.setParameter("idClient", idClient);
+        List<Emprunt> emprunts = query.getResultList();
+
+        IO.println("Emprunts du client id=" + idClient + " : " + emprunts.size());
+        emprunts.forEach(e -> {
+            IO.println("  " + e);
+            e.getLivres().forEach(l -> IO.println("    -> " + l.getTitre()));
+        });
+
+    } catch (Exception e) {
+        System.err.println("Erreur : " + e.getMessage());
     }
 }
 

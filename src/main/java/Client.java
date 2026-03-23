@@ -16,8 +16,8 @@ public class Client {
     @Column(name = "prenom")
     private String prenom;
 
-    @OneToMany(mappedBy = "client")
-    private List<Emprunt> emprunts;
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Emprunt> emprunts = new java.util.ArrayList<>();
 
     public Client() {}
 

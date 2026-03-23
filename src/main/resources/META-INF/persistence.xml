@@ -42,7 +42,6 @@
       <property name="jakarta.persistence.jdbc.password" value="etud" />
 
       <property name="hibernate.show_sql" value="true" />
-      <property name="hibernate.hbm2ddl.auto" value="update" />
       <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create" />
     </properties>
   </persistence-unit>

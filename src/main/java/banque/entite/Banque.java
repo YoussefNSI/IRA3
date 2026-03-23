@@ -14,7 +14,7 @@ public class Banque {
 
     private String nom;
 
-    @OneToMany(mappedBy = "banque")
+    @OneToMany(mappedBy = "banque", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Compte> comptes = new ArrayList<>();
 
     public Banque() {}

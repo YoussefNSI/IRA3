@@ -23,7 +23,7 @@ public class Compte {
     @ManyToMany(mappedBy = "comptes")
     private List<Client> clients = new ArrayList<>();
 
-    @OneToMany(mappedBy = "compte")
+    @OneToMany(mappedBy = "compte", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Operation> operations = new ArrayList<>();
 
     public Compte() {}

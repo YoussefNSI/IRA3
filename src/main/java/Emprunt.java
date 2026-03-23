@@ -30,7 +30,7 @@ public class Emprunt {
         joinColumns = @JoinColumn(name = "id_emprunt"),
         inverseJoinColumns = @JoinColumn(name = "id_livre")
     )
-    private List<Livre> livres;
+    private List<Livre> livres = new java.util.ArrayList<>();
 
     public Emprunt() {}
 
