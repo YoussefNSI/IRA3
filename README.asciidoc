@@ -22,3 +22,4 @@ This is a trivial Java EE 7 sample.
 .. `mvn versions:set -DnewVersion=2.0`
 .. `mvn deploy -P release`
 
+modification
