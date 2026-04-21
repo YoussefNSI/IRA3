@@ -23,3 +23,5 @@ public class Facteur extends Personne implements mesinterfaces.iFacteur
 	
 
 }
+
+// develop - modification 2
