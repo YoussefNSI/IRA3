@@ -11,3 +11,5 @@ public class VehiculeLaPoste extends Vehicule implements iFacteur {
 	}
 
 }
+
+// hotfix - correction 2
