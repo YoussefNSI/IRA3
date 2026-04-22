@@ -1,0 +1,24 @@
+<%- include('partials/header') %>
+
+<h2>Erreur 404 - Page non trouvée</h2>
+<p>Désolé, la page que vous recherchez n'existe pas.</p>
+<p>URL demandée : <code><%= pathname %></code></p>
+<div
+  style="
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+  "
+>
+  <p><strong>💡 Suggestions :</strong></p>
+  <ul>
+    <li>Vérifiez l'URL dans votre navigateur</li>
+    <li>
+      Retournez à la <a href="/" style="color: #007bff">page d'accueil</a>
+    </li>
+    <li>Utilisez le menu de navigation ci-dessus</li>
+  </ul>
+</div>
+
+<%- include('partials/footer') %>

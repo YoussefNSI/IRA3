@@ -1,0 +1,68 @@
+<%- include('partials/header') %>
+
+<h2>Nos Services</h2>
+<p>Nous proposons une gamme complète de services web :</p>
+<div style="display: grid; gap: 20px; margin-top: 20px">
+  <div
+    style="
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #007bff;
+    "
+  >
+    <h3>🌐 Développement Web</h3>
+    <p>Création de sites web sur mesure avec les dernières technologies.</p>
+    <% if (isAdmin) { %>
+    <p>
+      <small><strong>Prix :</strong> À partir de 5000€</small>
+    </p>
+    <% } %>
+  </div>
+  <div
+    style="
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #28a745;
+    "
+  >
+    <h3>📱 Applications Mobiles</h3>
+    <p>Développement d'applications mobiles natives et hybrides.</p>
+    <% if (isAdmin) { %>
+    <p>
+      <small><strong>Prix :</strong> À partir de 8000€</small>
+    </p>
+    <% } %>
+  </div>
+  <div
+    style="
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #ffc107;
+    "
+  >
+    <h3>☁️ Solutions Cloud</h3>
+    <p>Déploiement et gestion d'infrastructures cloud.</p>
+    <% if (isAdmin) { %>
+    <p>
+      <small><strong>Prix :</strong> À partir de 3000€</small>
+    </p>
+    <% } %>
+  </div>
+  <div
+    style="
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #dc3545;
+    "
+  >
+    <h3>🔧 Maintenance</h3>
+    <p>Support technique et maintenance continue de vos projets.</p>
+    <% if (isAdmin) { %>
+    <p>
+      <small><strong>Prix :</strong> 500€/mois</small>
+    </p>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

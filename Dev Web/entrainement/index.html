@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Site Vue.js</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+
+    <div id="app">
+        <h1>{{ message }}</h1>
+        <p>Bienvenue, {{ nom }}!</p>
+
+        <button @click="compteur++">Cliquez-moi</button>
+        <p>Vous avez cliqué {{ compteur }} fois.</p>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    nom: "Youssef",
+                    message: 'Bonjour Vue !',
+                    compteur: 0
+                }
+            }
+        }).mount('#app');
+    </script>
+
+</body>
+</html>

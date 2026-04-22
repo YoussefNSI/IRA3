@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+
+<h2>Contactez-nous</h2>
+<p>Nous serions ravis d'échanger avec vous sur votre projet !</p>
+<div style="margin-top: 30px">
+  <h3>📧 Informations de contact</h3>
+  <p><strong>Email :</strong> contact@monserveur.fr</p>
+  <p><strong>Téléphone :</strong> +33 1 23 45 67 89</p>
+  <p><strong>Adresse :</strong> 123 Rue du Web, 75001 Paris, France</p>
+
+  <% if (isAdmin) { %>
+  <div
+    style="
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+    "
+  >
+    <p><strong>👑 Contact Admin Direct :</strong></p>
+    <p><strong>Email Admin :</strong> admin@monserveur.fr</p>
+    <p><strong>Téléphone Admin :</strong> +33 6 12 34 56 78</p>
+  </div>
+  <% } %>
+</div>
+<div
+  style="
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #e7f3ff;
+    border-radius: 5px;
+  "
+>
+  <h3>💬 Formulaire de contact</h3>
+  <p>Pour nous contacter, envoyez-nous un email à l'adresse ci-dessus avec :</p>
+  <ul>
+    <li>Votre nom et prénom</li>
+    <li>Votre entreprise (si applicable)</li>
+    <li>Une description de votre projet</li>
+    <li>Vos coordonnées</li>
+  </ul>
+</div>
+
+<%- include('partials/footer') %>

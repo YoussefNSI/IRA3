@@ -1,0 +1,27 @@
+<%- include('partials/header') %>
+
+<h2>Bienvenue sur notre serveur web !</h2>
+<p>Ceci est un exemple de serveur HTTP créé avec Node.js et EJS.</p>
+<p>
+  Utilisez le menu de navigation ci-dessus pour explorer les différentes pages.
+</p>
+<ul>
+  <li>🏠 Vous êtes actuellement sur la page d'accueil</li>
+  <li>📝 Découvrez qui nous sommes dans la section "À propos"</li>
+  <li>💼 Consultez nos services proposés</li>
+  <li>📧 Contactez-nous via le formulaire de contact</li>
+</ul>
+
+<% if (isAdmin) { %>
+<div
+  style="
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+  "
+>
+  <p><strong>👑 Vous êtes en mode Admin !</strong></p>
+  <p>Vous avez accès à des fonctionnalités administratives spéciales.</p>
+</div>
+<% } %> <%- include('partials/footer') %>
